@@ -18,8 +18,8 @@ $procedure = preg_replace('/[^a-z0-9_]+/i','',array_shift($request));
 // escape the columns and values from the input object
 $columns = preg_replace('/[^a-z0-9_]+/i','',array_keys($input));
 $values = array_map(function ($value) use ($link) {
-  if ($value===null) return null;
-  return mysqli_real_escape_string($link,(string)$value);
+	if ($value===null) return null;
+	return mysqli_real_escape_string($link,(string)$value);
 },array_values($input));
 
 // check whether or not procedure exists
@@ -52,8 +52,8 @@ if (!$procedure) {
 
 	// die if SQL statement failed
 	if (!$row) {
-	  http_response_code(404);
-	  die(mysqli_error());
+		http_response_code(404);
+		die(mysqli_error());
 	}
 
 	$procedure = $row['SPECIFIC_NAME'];
@@ -95,38 +95,38 @@ if (!$procedure) {
 	} elseif ($method == 'POST') {
 
 		$values = array_map(function ($value) use ($link) {
-		  if ($value===null) return null;
-		  return mysqli_real_escape_string($link,(string)$value);
+			if ($value===null) return null;
+			return mysqli_real_escape_string($link,(string)$value);
 		},array_values($input));
 		$input = implode('; ',array_map(function ($key,$value) { return "set @`$key` = '$value'"; },array_keys($input),$values));
 		$output = implode(', ',array_map(function ($key) { return "@`$key` as `$key`"; },array_keys($output)));
 		$names = implode(', ',array_map(function ($parameter) { return "@`$parameter[name]`"; },$parameters));
-    if ($input) $input = "$input;";
-    if ($output) $output = "; select $output";
+		if ($input) $input = "$input;";
+		if ($output) $output = "; select $output";
 		$sql = "$input CALL `$procedure` ($names) $output";
 		//die($sql);
 
 		// excecute SQL statement
 		mysqli_multi_query($link,$sql);
-    // get last result as json
-    $first = true;
-    echo '[';
+		// get last result as json
+		$first = true;
+		echo '[';
 		do {
 			$result = mysqli_store_result($link);
 
-      if ($result) {
-        if (!$first) echo ',';
-        else $first = false;
-        // get last result as json
-    		echo '[';
-    		for ($i=0;$i<mysqli_num_rows($result);$i++) {
-    			echo ($i>0?',':'').json_encode(mysqli_fetch_object($result));
-    		}
-    		echo ']';
-      }
+			if ($result) {
+				if (!$first) echo ',';
+				else $first = false;
+				// get last result as json
+				echo '[';
+				for ($i=0;$i<mysqli_num_rows($result);$i++) {
+					echo ($i>0?',':'').json_encode(mysqli_fetch_object($result));
+				}
+				echo ']';
+			}
 
 		} while (mysqli_more_results($link)?mysqli_next_result($link):false);
-    echo ']';
+		echo ']';
 
 	}
 
